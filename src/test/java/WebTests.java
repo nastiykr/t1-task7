@@ -1,26 +1,16 @@
-import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.DragAndDropOptions;
-import com.codeborne.selenide.SelenideElement;
-import com.codeborne.selenide.WebDriverRunner;
+import com.codeborne.selenide.*;
 import com.codeborne.selenide.junit5.TextReportExtension;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.interactions.Actions;
 
-import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selectors.byId;
-import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -66,8 +56,7 @@ public class WebTests extends BaseTest {
         elementB.shouldHave(text("B"));
 
         // Перетаскиваем элемент A на элемент B
-        Actions actions = new Actions(WebDriverRunner.getWebDriver());
-        actions.clickAndHold(elementA.shouldBe(visible)).moveToElement(elementB.shouldBe(visible)).release().build().perform();
+        Selenide.actions().clickAndHold(elementA.shouldBe(visible)).moveToElement(elementB.shouldBe(visible)).release().build().perform();
 
         // Проверяем, что элементы поменялись местами
         elementA.shouldHave(text("B"));
@@ -86,7 +75,7 @@ public class WebTests extends BaseTest {
 
         open(BASE_URL + "context_menu");
 
-        actions().contextClick(contextMenu).perform();
+        Selenide.actions().contextClick(contextMenu).perform();
 
         Alert alert = switchTo().alert();
         assertEquals("You selected a context menu", alert.getText());
@@ -101,19 +90,30 @@ public class WebTests extends BaseTest {
     @Test
     public void test3InfiniteScroll() {
 
-        SelenideElement textElement = $(byText("eius")).shouldBe(Condition.visible, Duration.ofSeconds(10));
+        SelenideElement texts = $(Selectors.withText("Eius"));
         SelenideElement button = $(byId("page-footer"));
 
         open(BASE_URL + "infinite_scroll");
 
-        while (!textElement.isDisplayed()) {
-            //Actions actions = new Actions(WebDriverRunner.getWebDriver());
-            //actions.scrollToElement(button);
+        int currentSwipeCount = 0;
+
+        while (!texts.isDisplayed()) {
             button.scrollTo();
+            /*
+            или
+            Selenide.actions.scrollToElement(button);
+            или
+            Selenide.actions().scrollByAmount(0, 500).perform();
+             */
+
+
+            System.out.println("iter = " + currentSwipeCount);
+            currentSwipeCount++;
         }
 
         // Проверить, что элемент виден
-        textElement.shouldBe(Condition.visible);
+        texts.shouldBe(Condition.visible);
+        System.out.println(texts.innerText());
     }
 
     /**
@@ -121,40 +121,49 @@ public class WebTests extends BaseTest {
      * Нажать по 10 латинских символов, клавиши Enter, Ctrl, Alt, Tab.
      * Проверить, что после нажатия отображается всплывающий текст снизу, соответствующий конкретной клавише.
      */
-    @DisplayName("Key Presses")
+    @DisplayName("Key Presses 1")
     @Test
-    public void test4KeyPresses() {
+    public void test51KeyPresses() {
 
         SelenideElement body = $(byId("target"));
         SelenideElement result = $(byId("result"));
 
-        List<String> keysToPress1 = Stream.of("a", "b", "c", "d", "e", "f", "g", "h", "i", "j").collect(Collectors.toList());
-
-        Map<String, CharSequence> keyMap = new HashMap<>();
-        keyMap.put("ENTER", Keys.ENTER);
-        keyMap.put("CONTROL", Keys.CONTROL);
-        keyMap.put("ALT", Keys.ALT);
-        keyMap.put("TAB", Keys.TAB);
+        List<String> keysToPress1 = List.of("a", "b", "c", "d", "e", "f", "g", "h", "i", "j");
+        List<Keys> keysToPress2 = List.of(Keys.ENTER, Keys.CONTROL, Keys.ALT, Keys.TAB);
 
         open(BASE_URL + "key_presses");
 
-        body.shouldBe(visible).click();
-        for (String key : keysToPress1) {
-            body.shouldBe(visible).sendKeys(key);
+        body.shouldBe(visible);
+
+        keysToPress1.forEach(key -> {
+            Selenide.actions().sendKeys(key).perform();
             result.shouldHave(Condition.text("You entered: " + key));
-        }
+        });
 
-        body.shouldBe(visible).sendKeys(Keys.CONTROL);
-        result.shouldHave(Condition.text("You entered: CONTROL"));
+        keysToPress2.forEach(key -> {
+            Selenide.actions().sendKeys(key).perform();
+            result.shouldHave(Condition.text("You entered: " + key.name()));
+        });
+    }
 
-        body.shouldBe(visible).sendKeys(Keys.ALT);
-        result.shouldHave(Condition.text("You entered: ALT"));
+    @DisplayName("Key Presses 2")
+    @Test
+    public void test52KeyPresses() {
+        SelenideElement result = $(byId("result"));
 
-        body.shouldBe(visible).sendKeys(Keys.TAB);
-        result.shouldHave(Condition.text("You entered: TAB"));
+        List<Object> keysToPress = List.of("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", Keys.ENTER, Keys.CONTROL, Keys.ALT, Keys.TAB);
 
-        body.shouldBe(visible).sendKeys(Keys.ENTER);
-        result.shouldHave(Condition.text("You entered: ENTER"));
+        open(BASE_URL + "key_presses");
+
+        keysToPress.forEach(key -> {
+            if (key instanceof String letter) {
+                Selenide.actions().sendKeys(letter).perform();
+                result.shouldHave(Condition.text("You entered: " + letter));
+            } else if (key instanceof Keys keys) {
+                Selenide.actions().sendKeys(keys).perform();
+                result.shouldHave(Condition.text("You entered: " + keys.name()));
+            }
+        });
     }
 }
 
