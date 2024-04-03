@@ -4,7 +4,7 @@ import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-import static com.codeborne.selenide.Selenide.closeWindow;
+import static com.codeborne.selenide.Selenide.closeWebDriver;
 
 public class BaseTest {
     public static final String BASE_URL = "https://the-internet.herokuapp.com/";
@@ -20,6 +20,6 @@ public class BaseTest {
 
     @AfterEach
     public void tearDown() {
-        closeWindow();
+        closeWebDriver();
     }
 }

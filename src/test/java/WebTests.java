@@ -1,13 +1,16 @@
-import com.codeborne.selenide.*;
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.DragAndDropOptions;
+import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.WebDriverRunner;
+import com.codeborne.selenide.junit5.TextReportExtension;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,13 +18,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.codeborne.selenide.Condition.text;
-
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selectors.*;
+import static com.codeborne.selenide.Selectors.byId;
+import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.openqa.selenium.Keys.*;
 
+@ExtendWith({TextReportExtension.class})
 public class WebTests extends BaseTest {
 
     /**
@@ -88,14 +91,6 @@ public class WebTests extends BaseTest {
         Alert alert = switchTo().alert();
         assertEquals("You selected a context menu", alert.getText());
         alert.accept();
-
-        // Закрытие контекстного меню
-        //$(byId("content")).click(ClickOptions.usingJavaScript().offset(2000, 2000));
-        Actions actions = new Actions(WebDriverRunner.getWebDriver());
-
-        sleep(500);
-        // Закрытие контекстного меню
-        actions.release();
     }
 
     /**
@@ -104,17 +99,17 @@ public class WebTests extends BaseTest {
      */
     @DisplayName("Infinite Scroll")
     @Test
-    public void test3InfiniteScrollp() {
+    public void test3InfiniteScroll() {
 
-        SelenideElement textElement = $(byText("Eius"));
+        SelenideElement textElement = $(byText("eius")).shouldBe(Condition.visible, Duration.ofSeconds(10));
         SelenideElement button = $(byId("page-footer"));
-        Actions actions = new Actions(WebDriverRunner.getWebDriver());
 
         open(BASE_URL + "infinite_scroll");
 
         while (!textElement.isDisplayed()) {
-            actions.scrollToElement(button);
-            //button.scrollTo();
+            //Actions actions = new Actions(WebDriverRunner.getWebDriver());
+            //actions.scrollToElement(button);
+            button.scrollTo();
         }
 
         // Проверить, что элемент виден

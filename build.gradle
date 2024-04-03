@@ -34,6 +34,8 @@ dependencies {
     implementation "com.codeborne:selenide:7.2.2"
     implementation "io.qameta.allure:allure-selenide:$allureVersion"
     implementation "org.aspectj:aspectjweaver:1.9.21.2"
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.12'
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.12'
 }
 
 test {
